@@ -80,12 +80,16 @@ function getLocation() {
         statusMsg.innerText = "🛰️ Locating you...";
         
         navigator.geolocation.getCurrentPosition((position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            
-            console.log(`Location captured: ${lat}, ${lon}`);
-            statusMsg.innerText = `🚨 Alert Sent! Loc: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-            
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    
+    // Create a Google Maps URL
+    const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+    
+    console.log(`Map Link: ${mapUrl}`);
+    
+    // Update the message so the user can see their coordinates are locked
+    statusMsg.innerHTML = `🚨 Alert Sent!<br><a href="${mapUrl}" target="_blank" style="color: white;">View Location on Map</a>`;
             // This is where we will eventually send the data to the server
         }, (error) => {
             console.error("Error getting location: ", error);
