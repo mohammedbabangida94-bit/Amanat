@@ -50,6 +50,9 @@ function finishSOS() {
     timer = null;
     sosBtn.innerText = "SENT";
     sosBtn.style.backgroundColor = "#4caf50"; // Green
+
+    getLocation();
+
     statusMsg.innerText = "🚨 Alert Sent to Estate Security!";
     statusMsg.style.color = "red";
 
@@ -72,3 +75,23 @@ function finishSOS() {
     console.log("SOS triggered at: " + new Date().toLocaleTimeString());
 }
 
+function getLocation() {
+    if ("geolocation" in navigator) {
+        statusMsg.innerText = "🛰️ Locating you...";
+        
+        navigator.geolocation.getCurrentPosition((position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            console.log(`Location captured: ${lat}, ${lon}`);
+            statusMsg.innerText = `🚨 Alert Sent! Loc: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+            
+            // This is where we will eventually send the data to the server
+        }, (error) => {
+            console.error("Error getting location: ", error);
+            statusMsg.innerText = "🚨 Alert Sent (Location Denied)";
+        });
+    } else {
+        statusMsg.innerText = "🚨 Alert Sent (GPS not supported)";
+    }
+}
