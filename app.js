@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const finishSOS = () => {
+        alert("SOS Triggered! Checking GPS...");
         sosButton.classList.remove('active');
         sosButton.classList.add('sent');
         statusMsg.innerText = "Locating...";
