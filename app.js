@@ -1,5 +1,8 @@
-// Selecting UI Elements
-const sosButton = document.getElementById('sosButton');
+// WRAP EVERYTHING IN THIS:
+document.addEventListener('DOMContentLoaded', () => {
+
+
+const sosButton = document.getElementById('sos-btn');
 const statusMsg = document.getElementById('statusMsg');
 const timerDisplay = document.getElementById('timer');
 
@@ -78,3 +81,5 @@ sosButton.addEventListener('mousedown', startSOS);
 sosButton.addEventListener('mouseup', cancelSOS);
 sosButton.addEventListener('touchstart', (e) => { e.preventDefault(); startSOS(); });
 sosButton.addEventListener('touchend', cancelSOS);
+
+});
