@@ -46,14 +46,23 @@
         <p>Estate Security Solutions</p>
     </header>
 
-    <main style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh;">
-        <div id="timer"></div>
-        <div id="statusMsg">Ready</div>
+    <main style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh;">
+        <div id="timer" style="font-size: 2rem; font-weight: bold; margin-bottom: 10px;"></div>
+        <div id="statusMsg" style="font-weight: bold; margin-bottom: 20px;">Ready</div>
+        
         <button id="sos-btn" class="sos-button">SOS</button>
-        <p id="status-msg" style="margin-top: 20px; font-weight: bold;"></p>
+
+        <div class="settings-panel" style="margin-top: 40px; text-align: center; background: #f5f5f5; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
+            <h3 style="font-size: 1rem; color: #333;">Emergency Contacts</h3>
+            <input type="text" id="contact1" placeholder="Contact 1 (e.g. +234...)" value="+234XXXXXXXXXX" style="display: block; margin: 5px auto; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <input type="text" id="contact2" placeholder="Contact 2" style="display: block; margin: 5px auto; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <p style="font-size: 0.7rem; color: #666;">Numbers are saved locally for privacy.</p>
+        </div>
     </main>
 
+    <audio id="sirenAudio" src="siren.mp3" preload="auto" loop></audio>
+
     <script src="app.js"></script>
-   
+    
 </body>
 </html>
