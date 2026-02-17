@@ -37,32 +37,40 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const finishSOS = () => {
-        alert("SOS Triggered! Checking GPS...");
-        sosButton.classList.remove('active');
-        sosButton.classList.add('sent');
-        statusMsg.innerText = "Locating...";
+    // 1. Change Button Appearance
+    sosButton.classList.remove('active');
+    sosButton.classList.add('sent');
+    statusMsg.innerText = "Attempting to locate...";
 
-        if ("vibrate" in navigator) {
-            navigator.vibrate([500, 100, 500]);
-        }
+    // 2. Immediate Feedback (Vibration)
+    if ("vibrate" in navigator) {
+        navigator.vibrate([500, 100, 500]);
+    }
 
-        navigator.geolocation.getCurrentPosition((position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            // FIXED SYNTAX BELOW:
-            const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-            
-            statusMsg.innerHTML = `🚨 ALERT SENT!<br><a href="${mapUrl}" target="_blank" style="color: white; font-weight: bold;">TAP TO VIEW MAP</a>`;
-        }, (error) => {
-            statusMsg.innerText = "GPS Error: " + error.message;
-        });
+    // 3. Trigger GPS
+    navigator.geolocation.getCurrentPosition((position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        // This is the line we've been perfecting!
+        const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+        
+        // Render the real link to the UI
+        statusMsg.innerHTML = `🚨 ALERT SENT!<br><a href="${mapUrl}" target="_blank" style="color: white; background: blue; padding: 10px; border-radius: 5px; text-decoration: none;">TAP TO VIEW MAP</a>`;
+        
+        console.log("Map URL generated:", mapUrl);
+    }, (error) => {
+        statusMsg.innerText = "GPS Error: " + error.message;
+        console.error(error);
+    });
 
-        setTimeout(() => {
-            sosButton.classList.remove('sent');
-            statusMsg.innerText = "Ready";
-            timerDisplay.innerText = "";
-        }, 10000);
-    };
+    // 4. Reset the app after 10 seconds
+    setTimeout(() => {
+        sosButton.classList.remove('sent');
+        statusMsg.innerText = "Ready";
+        timerDisplay.innerText = "";
+    }, 10000);
+};
 
     // 3. LISTENERS
     sosButton.addEventListener('mousedown', startSOS);
