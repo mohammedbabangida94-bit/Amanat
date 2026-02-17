@@ -46,7 +46,7 @@
             const lon = position.coords.longitude;
             const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
             
-            const securityPhone = "+234XXXXXXXXXX"; // Put your number here
+            const securityPhone = "+2348069358541"; // Put your number here
             const smsBody = `EMERGENCY! I need help. My location: ${mapUrl}`;
             const smsUrl = `sms:${securityPhone}?body=${encodeURIComponent(smsBody)}`;
 
