@@ -1,18 +1,23 @@
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const sosButton = document.getElementById('sos-btn');
     const statusMsg = document.getElementById('statusMsg');
     const timerDisplay = document.getElementById('timer');
+    
+    // THE SIREN: Create an audio object
+    const siren = new Audio('siren.mp3'); 
+    siren.loop = true;
 
     let countdown;
     let timeLeft = 3;
     let isSent = false; 
+
     const startSOS = () => {
         if (isSent) return; 
         timeLeft = 3;
         timerDisplay.innerText = timeLeft;
         sosButton.classList.add('active');
-        statusMsg.innerText = "HOLDING...";
-
+        statusMsg.innerText = "CONFIRMING...";
+        
         countdown = setInterval(() => {
             timeLeft--;
             timerDisplay.innerText = timeLeft;
@@ -28,33 +33,35 @@
         clearInterval(countdown);
         sosButton.classList.remove('active');
         timerDisplay.innerText = "";
-        statusMsg.innerText = "Ready";
+        statusMsg.innerText = "VigilantNG Ready";
     };
 
     const finishSOS = () => {
         isSent = true; 
-        sosButton.classList.remove('active');
-        sosButton.classList.add('sent');
-        statusMsg.innerText = "LOCATING...";
+        sosButton.classList.replace('active', 'sent');
+        statusMsg.innerText = "BROADCASTING...";
 
-        if ("vibrate" in navigator) {
-            navigator.vibrate([500, 100, 500]);
-        }
+        // START THE SIREN
+        siren.play().catch(e => console.log("Audio play blocked until user interaction"));
 
         navigator.geolocation.getCurrentPosition((position) => {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
             
-            const securityPhone = "+2348069358541"; // Put your number here
+            // CONTACT LIST (Add your test numbers here)
+            const contacts = ["+234XXXXXXXXXX", "+234YYYYYYYYYY"]; 
             const smsBody = `EMERGENCY! I need help. My location: ${mapUrl}`;
-            const smsUrl = `sms:${securityPhone}?body=${encodeURIComponent(smsBody)}`;
+            
+            // We use the first contact for the quick-action button
+            const smsUrl = `sms:${contacts[0]}?body=${encodeURIComponent(smsBody)}`;
 
             statusMsg.innerHTML = `
-                <div style="margin-top:20px;">
-                    <a href="${smsUrl}" style="background: #25D366; color: white; padding: 15px; display: block; margin-bottom: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; text-align: center;">📲 SEND SMS ALERT</a>
-                    <a href="${mapUrl}" target="_blank" style="background: #4285F4; color: white; padding: 15px; display: block; border-radius: 8px; text-decoration: none; font-weight: bold; text-align: center;">🗺️ VIEW MAP</a>
-                    <button onclick="location.reload()" style="margin-top: 20px; background: none; border: 1px solid #ccc; color: #666; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Reset App</button>
+                <div class="action-box">
+                    <a href="${smsUrl}" class="btn-sms">📲 SEND SMS ALERT</a>
+                    <a href="${mapUrl}" target="_blank" class="btn-map">🗺️ VIEW MAP</a>
+                    <button onclick="stopSiren()" class="btn-stop">🔇 STOP SIREN</button>
+                    <button onclick="location.reload()" class="btn-reset">Reset System</button>
                 </div>
             `;
         }, (error) => {
@@ -62,6 +69,13 @@
             isSent = false;
         });
     };
+
+    // Global function to stop the noise
+    window.stopSiren = () => {
+        siren.pause();
+        siren.currentTime = 0;
+    };
+
     sosButton.addEventListener('mousedown', startSOS);
     sosButton.addEventListener('mouseup', cancelSOS);
     sosButton.addEventListener('touchstart', (e) => { e.preventDefault(); startSOS(); });
