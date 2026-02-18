@@ -45,33 +45,43 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const finishSOS = () => {
-        isSent = true;
-        sosButton.classList.add('sent');
-        statusMsg.innerText = "BROADCASTING...";
+    isSent = true;
+    sosButton.classList.add('sent');
+    statusMsg.innerText = "GETTING LOCATION & BROADCASTING...";
 
-        // Trigger Siren
-        siren.play().catch(e => console.log("Audio play blocked: " + e));
+    // Trigger Siren & Vibration
+    siren.play().catch(e => console.log("Audio blocked: " + e));
+    if (navigator.vibrate) {
+        navigator.vibrate([500, 200, 500, 200, 500]); // SOS pattern
+    }
 
-        navigator.geolocation.getCurrentPosition((position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-            
-            const primaryNum = document.getElementById('contact1').value;
-            const smsBody = `EMERGENCY! I need help. My location: ${mapUrl}`;
-            const smsUrl = `sms:${primaryNum}?body=${encodeURIComponent(smsBody)}`;
+    const showSmsButton = (mapUrl = "") => {
+        const primaryNum = document.getElementById('contact1').value;
+        const locationText = mapUrl ? ` My location: ${mapUrl}` : " (Location unavailable)";
+        const smsBody = `EMERGENCY! I need help.${locationText}`;
+        const smsUrl = `sms:${primaryNum}?body=${encodeURIComponent(smsBody)}`;
 
-            statusMsg.innerHTML = `
-                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
-                    <a href="${smsUrl}" style="background: #25D366; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; text-align: center; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);">📲 SEND SMS ALERT</a>
-                    <button onclick="stopAll()" style="background: #ff4444; color: white; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer;">🔇 STOP SIREN & RESET</button>
-                </div>
-            `;
-        }, (error) => {
-            statusMsg.innerText = "GPS Error: " + error.message;
-            isSent = false;
-        });
+        statusMsg.innerHTML = `
+            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                <a href="${smsUrl}" style="background: #25D366; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; text-align: center; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);">📲 SEND SMS NOW</a>
+                <button onclick="stopAll()" style="background: #ff4444; color: white; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer;">🔇 STOP SIREN & RESET</button>
+            </div>
+        `;
     };
+
+    // Try to get location, but don't wait forever
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const mapUrl = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
+            showSmsButton(mapUrl);
+        },
+        (error) => {
+            console.log("GPS Failed:", error.message);
+            showSmsButton(); // Show button anyway without location
+        },
+        { timeout: 8000 } // Wait max 8 seconds for GPS
+    );
+};
     window.stopAll = () => {
         siren.pause();
         siren.currentTime = 0;
