@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         timeLeft = 3;
         timerDisplay.innerText = timeLeft;
         sosButton.classList.add('active');
-        statusMsg.innerText = "HOLDING...";
+        statusMsg.innerText = "RIKE...";
 
         countdown = setInterval(() => {
             timeLeft--;
@@ -41,13 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(countdown);
         sosButton.classList.remove('active');
         timerDisplay.innerText = "";
-        statusMsg.innerText = "VigilantNG Ready";
+        statusMsg.innerText = "Amanat Na jira";
     };
 
     const finishSOS = () => {
     isSent = true;
     sosButton.classList.add('sent');
-    statusMsg.innerText = "GETTING LOCATION & BROADCASTING...";
+    statusMsg.innerText = "Ana sanarwa...";
 
     // Trigger Siren & Vibration
     siren.play().catch(e => console.log("Audio blocked: " + e));
@@ -63,8 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         statusMsg.innerHTML = `
             <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
-                <a href="${smsUrl}" style="background: #25D366; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; text-align: center; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);">📲 SEND SMS NOW</a>
-                <button onclick="stopAll()" style="background: #ff4444; color: white; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer;">🔇 STOP SIREN & RESET</button>
+                <a href="${smsUrl}" style="background: #25D366; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; text-align: center; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);">📲 AIKA SOKON SMS</a>
+                <button onclick="stopAll()" style="background: #ff4444; color: white; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer;">🔇 TSAYAR DA NAURAR ALAM DAN KA MAIMAITA</button>
             </div>
         `;
     };
