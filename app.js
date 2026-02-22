@@ -1,25 +1,24 @@
-    function renderRestrictedUI(lang) {
+  function renderRestrictedUI(lang) {
     const labels = {
-        
-        
+        'english': { title: 'Access Restricted', msg: 'Security services for this zone have been suspended.', contact: 'Estate Office' },
+        'yoruba': { title: 'Ìhámọ́ Wo Inú Ibí', msg: 'A ti dádúró fún ìgbà díẹ̀.', contact: 'Alákòóso Ètò' },
         'hausa': { title: 'An Takaita Shiga', msg: 'An dakatar da wannan akant dinka.', contact: 'mai kula da shirin' }
     };
 
-    // FALLBACK: If 'lang' is undefined or wrong, use 'english'
+    // THE FIX: If 'lang' is misspelled or missing, use 'english' as a backup
     const ui = labels[lang] || labels['english'];
 
     document.body.innerHTML = `
-        <div style="background-color: #000; color: #fff; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; text-align: center; border: 15px solid #d32f2f; box-sizing: border-box; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;">
+        <div style="background-color: #000; color: #fff; height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; text-align: center; border: 15px solid #d32f2f; box-sizing: border-box; position: fixed; top: 0; left: 0; z-index: 9999;">
             <div style="font-size: 80px; color: #d32f2f; margin-bottom: 20px;">⚠️</div>
-            <h1 style="text-transform: uppercase; color: #d32f2f; margin: 0;">${ui.title}</h1>
+            <h1 style="text-transform: uppercase; color: #d32f2f; margin: 0; font-size: 24px;">${ui.title}</h1>
             <p style="font-size: 18px; max-width: 300px; margin: 20px;">${ui.msg}<br><br>Please contact <strong>${ui.contact}</strong>.</p>
-            <div style="background: #d32f2f; padding: 10px 20px; border-radius: 5px;">REF: ${MY_CLIENT_ID}</div>
-            <p style="margin-top: 40px; font-size: 10px; color: #444;">VIGILANTNG SECURITY SUITE</p>
+            <div style="background: #d32f2f; padding: 10px 20px; border-radius: 5px; font-weight: bold;">REF: ${MY_CLIENT_ID}</div>
         </div>
     `;
     
     throw new Error("Execution halted: Access Suspended.");
-    }
+}
 
     document.addEventListener('DOMContentLoaded', () => {
     const sosButton = document.getElementById('sos-btn');
