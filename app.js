@@ -1,3 +1,68 @@
+/** * SECURITY COMMAND CENTER CONFIGURATION 
+ */
+// STEP 1: Change this ID for each app (e.g., "shori_magodo_001" or "amanat_kano_001")
+const MY_CLIENT_ID = "amanat_kano_001"; 
+
+// STEP 2: Your unique Raw URL
+const MASTER_SWITCH_URL = "https://raw.githubusercontent.com/mohammedbabangida94-bit/Vigilant-Admin/refs/heads/main/sys_check_772.json";
+
+/**
+ * ACCESS CONTROL ENGINE
+ * This checks the Master Ledger before allowing the user to use the app.
+ */
+async function validateAccess() {
+    try {
+        // Fetching the status from your Admin Repo
+        const response = await fetch(MASTER_SWITCH_URL);
+        
+        if (!response.ok) {
+            console.warn("Command Center unreachable. Defaulting to Active.");
+            return; // Let them in if GitHub is down (Safety First)
+        }
+
+        const statusData = await response.json();
+
+        // STEP 3: Check if this specific client is active
+        if (statusData[MY_CLIENT_ID] !== "suspended") {
+            // Trigger the Restricted Access Screen
+            // Change 'english' to 'yoruba' or 'hausa' depending on the brand folder
+            renderRestrictedUI('english'); 
+        } else {
+            console.log(`Access verified for ${MY_CLIENT_ID}. System Green.`);
+        }
+    } catch (error) {
+        console.error("Connection Error:", error);
+        // We do not block the user if they have no internet/connection issues
+    }
+}
+
+/**
+ * THE RESTRICTED SCREEN (The "Kill Switch" View)
+ */
+function renderRestrictedUI(lang) {
+    const labels = {
+        
+        'hausa': { title: 'An Takaita Shiga', msg: 'An dakatar da wannan akant dinka.', contact: 'mai kula da shirin' }
+    };
+
+    const ui = labels[lang];
+
+    document.body.innerHTML = `
+        <div style="background-color: #000; color: #fff; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; text-align: center; border: 15px solid #d32f2f; box-sizing: border-box;">
+            <div style="font-size: 80px; color: #d32f2f; margin-bottom: 20px;">⚠️</div>
+            <h1 style="text-transform: uppercase; color: #d32f2f;">${ui.title}</h1>
+            <p style="font-size: 18px; max-width: 300px; margin: 20px;">${ui.msg}<br><br>Please contact <strong>${ui.contact}</strong>.</p>
+            <div style="background: #d32f2f; padding: 10px 20px; border-radius: 5px;">REF: ${MY_CLIENT_ID}</div>
+        </div>
+    `;
+    
+    // Stop any further script execution
+    throw new Error("Access Suspended.");
+}
+
+// EXECUTE CHECK ON LOAD
+validateAccess();
+
 document.addEventListener('DOMContentLoaded', () => {
     const sosButton = document.getElementById('sos-btn');
     const statusMsg = document.getElementById('statusMsg');
