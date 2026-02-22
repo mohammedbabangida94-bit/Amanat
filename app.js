@@ -23,7 +23,7 @@ async function validateAccess() {
         const statusData = await response.json();
 
         // STEP 3: Check if this specific client is active
-        if (statusData[MY_CLIENT_ID] !== "suspended") {
+        if (statusData[MY_CLIENT_ID] !== "active") {
             // Trigger the Restricted Access Screen
             // Change 'english' to 'yoruba' or 'hausa' depending on the brand folder
             renderRestrictedUI('english'); 
