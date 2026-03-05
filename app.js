@@ -13,7 +13,7 @@ const showSmsButton = (smsUrl) => {
     const statusMsg = document.getElementById('statusMsg');
     statusMsg.innerHTML = `
         <a href="${smsUrl}" id="send-sms-final" style="background: #25D366; display:block; padding: 20px; color: white; border-radius: 12px; text-decoration: none; font-weight: bold; text-align: center; margin-top:10px;">
-           📲 SEND AMANAT SOS
+           📲 AIKA SAKON SMS
         </a>`;
 };
 
