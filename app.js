@@ -1,102 +1,84 @@
-// 1. IDENTITY CHECK (Must match GitHub JSON exactly)
-const MY_CLIENT_ID = "amanat_kano_001"; 
+// 1. GLOBAL STATE (Top level so all functions see them)
+let isSent = false;
+let countdown;
+let timeLeft = 3;
 
-// 2. MASTER LEDGER URL
-const MASTER_SWITCH_URL = "https://raw.githubusercontent.com/mohammedbabangida94-bit/Vigilant-Admin/refs/heads/main/sys_check_772.json";
+// 2. HELPER FUNCTIONS
+const smsUrlBuilder = (body) => {
+    const contactNum = "+2348000000000"; // Update to Amanat Emergency Number
+    return `sms:${contactNum}?body=${encodeURIComponent(body)}`;
+};
 
-/**
- * THE COMMAND CENTER CHECK
- */
-async function validateAccess() {
-    try {
-        // We add a timestamp (?t=...) to the end of the URL to bypass the browser cache
-        const response = await fetch(`${MASTER_SWITCH_URL}?t=${new Date().getTime()}`);
-        
-        if (!response.ok) throw new Error("Could not reach GitHub");
+const showSmsButton = (smsUrl) => {
+    const statusMsg = document.getElementById('statusMsg');
+    statusMsg.innerHTML = `
+        <a href="${smsUrl}" id="send-sms-final" style="background: #25D366; display:block; padding: 20px; color: white; border-radius: 12px; text-decoration: none; font-weight: bold; text-align: center; margin-top:10px;">
+           📲 SEND AMANAT SOS
+        </a>`;
+};
 
-        const statusData = await response.json();
-        
-        console.log("Status Data Received:", statusData);
-        console.log("Checking status for:", MY_CLIENT_ID);
-
-        // 3. THE SWITCH TRIGGER
-        if (statusData[MY_CLIENT_ID] !== "active") {
-            console.warn("ACCESS SUSPENDED. Loading UI...");
-            renderRestrictedUI('hausa');
-        } else {
-            console.log("ACCESS ACTIVE. Welcome to Amanat.");
+// 3. THE RESET LOGIC
+window.stopAll = () => {
+    if (confirm("tsayar da karan domin sake aika soko? (Stop & Reset?)")) {
+        const siren = document.getElementById('sirenAudio');
+        if (siren) {
+            siren.pause();
+            siren.currentTime = 0;
         }
-    } catch (error) {
-        console.error("System Check Failed:", error);
-        // Default to active so the app works if GitHub is down
+        if (navigator.vibrate) navigator.vibrate(0);
+        isSent = false;
+        location.reload(); // Hard reset to clear UI
     }
-}
+};
 
-/**
- * THE RESTRICTED UI FUNCTION
- */
-function renderRestrictedUI(lang) {
-    const labels = {
-        'english': { title: 'Access Restricted', msg: 'Security services for this zone have been suspended.', contact: 'Estate Office' },
-        'yoruba': { title: 'Ìhámọ́ Wo Inú Ibí', msg: 'A ti dádúró fún ìgbà díẹ̀.', contact: 'Alákòóso Ètò' },
-        'hausa': { title: 'An Takaita Shiga', msg: 'An dakatar da wannan akant dinka.', contact: 'mai kula da shirin' }
-    };
-
-    // Use English if the selected language isn't found
-    const ui = labels[lang] || labels['english'];
-
-    document.body.innerHTML = `
-        <div style="background-color: #000; color: #fff; height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; text-align: center; border: 15px solid #d32f2f; box-sizing: border-box; position: fixed; top: 0; left: 0; z-index: 9999;">
-            <div style="font-size: 80px; color: #d32f2f; margin-bottom: 20px;">⚠️</div>
-            <h1 style="text-transform: uppercase; color: #d32f2f; margin: 0; font-size: 24px;">${ui.title}</h1>
-            <p style="font-size: 18px; max-width: 300px; margin: 20px;">${ui.msg}<br><br>Please contact <strong>${ui.contact}</strong>.</p>
-            <div style="background: #d32f2f; padding: 10px 20px; border-radius: 5px; font-weight: bold;">REF: ${MY_CLIENT_ID}</div>
-            <p style="margin-top: 40px; font-size: 10px; color: #444;">VIGILANTNG SECURITY SUITE</p>
-        </div>
-    `;
-    
-    // Stop the rest of the app from loading
-    window.stop(); 
-    throw new Error("Execution halted: Access Suspended.");
-}
-
-// 4. RUN THE CHECK
-validateAccess();
-
-    document.addEventListener('DOMContentLoaded', () => {
+// 4. THE MAIN ENGINE
+document.addEventListener('DOMContentLoaded', () => {
+    // UI Elements
     const sosButton = document.getElementById('sos-btn');
     const statusMsg = document.getElementById('statusMsg');
     const timerDisplay = document.getElementById('timer');
     const siren = document.getElementById('sirenAudio');
+    const stopBtn = document.getElementById('stop-btn');
+    const stealthToggle = document.getElementById('stealthToggle');
+    const bloodInput = document.getElementById('bloodGroup');
+    const allergiesInput = document.getElementById('allergies');
 
-    let countdown;
-    let timeLeft = 3;
-    let isSent = false;
+    // Load Saved Data
+    if (stealthToggle) {
+        stealthToggle.checked = localStorage.getItem('vgn_stealth_mode') === 'true';
+        stealthToggle.addEventListener('change', () => localStorage.setItem('vgn_stealth_mode', stealthToggle.checked));
+    }
+    if (bloodInput) {
+        bloodInput.value = localStorage.getItem('vgn_blood') || '';
+        bloodInput.addEventListener('input', () => localStorage.setItem('vgn_blood', bloodInput.value));
+    }
+    if (allergiesInput) {
+        allergiesInput.value = localStorage.getItem('vgn_allergies') || '';
+        allergiesInput.addEventListener('input', () => localStorage.setItem('vgn_allergies', allergiesInput.value));
+    }
 
-    // AUDIO PRIMING: Mobile browsers need one "legal" touch to allow sound
-    const primeAudio = () => {
-        siren.play().then(() => {
-            siren.pause(); // Start and immediately pause to "unlock" it
-            siren.currentTime = 0;
-        }).catch(e => console.log("Waiting for user interaction..."));
-        // Remove this listener after first touch
-        document.removeEventListener('touchstart', primeAudio);
+    // Stealth Siren Logic
+    window.playSiren = () => {
+        const isStealth = localStorage.getItem('vgn_stealth_mode') === 'true';
+        if (!isStealth && siren) {
+            siren.play().catch(e => console.log("Audio Blocked"));
+            if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
+        }
     };
-    document.addEventListener('touchstart', primeAudio);
 
+    // SOS Functions
     const startSOS = () => {
         if (isSent) return;
         timeLeft = 3;
         timerDisplay.innerText = timeLeft;
         sosButton.classList.add('active');
-        statusMsg.innerText = "RIKE...";
-
+        statusMsg.innerText = "Di mu fun iseju meta...";
         countdown = setInterval(() => {
             timeLeft--;
             timerDisplay.innerText = timeLeft;
             if (timeLeft <= 0) {
                 clearInterval(countdown);
-                finishSOS();
+                finishSOS(); 
             }
         }, 1000);
     };
@@ -106,55 +88,34 @@ validateAccess();
         clearInterval(countdown);
         sosButton.classList.remove('active');
         timerDisplay.innerText = "";
-        statusMsg.innerText = "Amanat Na jira";
+        statusMsg.innerText = "Amanat Ready";
     };
 
     const finishSOS = () => {
-    isSent = true;
-    sosButton.classList.add('sent');
-    statusMsg.innerText = "Ana sanarwa...";
+        isSent = true;
+        sosButton.classList.add('sent');
+        statusMsg.innerText = "Processing Emergency...";
 
-    // Trigger Siren & Vibration
-    siren.play().catch(e => console.log("Audio blocked: " + e));
-    if (navigator.vibrate) {
-        navigator.vibrate([500, 200, 500, 200, 500]); // SOS pattern
-    }
+        const blood = localStorage.getItem('vgn_blood') || "Not Provided";
+        const allergies = localStorage.getItem('vgn_allergies') || "None";
 
-    const showSmsButton = (mapUrl = "") => {
-        const primaryNum = document.getElementById('contact1').value;
-        const locationText = mapUrl ? ` My location: ${mapUrl}` : " (Location unavailable)";
-        const smsBody = `EMERGENCY! I need help.${locationText}`;
-        const smsUrl = `sms:${primaryNum}?body=${encodeURIComponent(smsBody)}`;
-
-        statusMsg.innerHTML = `
-            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
-                <a href="${smsUrl}" style="background: #25D366; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-weight: bold; text-align: center; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);">📲 AIKA SOKON SMS</a>
-                <button onclick="stopAll()" style="background: #ff4444; color: white; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer;">🔇 TSAYAR DA NAURAR ALAM DAN KA MAIMAITA</button>
-            </div>
-        `;
+        navigator.geolocation.getCurrentPosition((position) => {
+            const mapUrl = `https://www.google.com/maps?q=$${position.coords.latitude},${position.coords.longitude}`;
+            const smsBody = `AMANAT EMERGENCY!%0ALocation: ${mapUrl}%0ABlood: ${blood}%0AAllergies: ${allergies}`;
+            showSmsButton(smsUrlBuilder(smsBody));
+            window.playSiren();
+        }, (err) => {
+            const smsBody = `AMANAT EMERGENCY! (GPS Off)%0ABlood: ${blood}%0AAllergies: ${allergies}`;
+            showSmsButton(smsUrlBuilder(smsBody));
+            window.playSiren();
+        }, { enableHighAccuracy: true });
     };
 
-    // Try to get location, but don't wait forever
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const mapUrl = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
-            showSmsButton(mapUrl);
-        },
-        (error) => {
-            console.log("GPS Failed:", error.message);
-            showSmsButton(); // Show button anyway without location
-        },
-        { timeout: 8000 } // Wait max 8 seconds for GPS
-    );
-};
-    window.stopAll = () => {
-        siren.pause();
-        siren.currentTime = 0;
-        location.reload(); // Hard reset for safety
-    };
-
+    // Listeners
     sosButton.addEventListener('mousedown', startSOS);
     sosButton.addEventListener('mouseup', cancelSOS);
     sosButton.addEventListener('touchstart', (e) => { e.preventDefault(); startSOS(); });
     sosButton.addEventListener('touchend', cancelSOS);
+    
+    if (stopBtn) stopBtn.addEventListener('click', window.stopAll);
 });
